@@ -53,6 +53,45 @@ export const theme = createTheme({
         },
       },
     },
+    MuiCssBaseline: {
+      styleOverrides: {
+        html: {
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#B8860B #050505',
+          scrollBehavior: 'smooth',
+        },
+        body: {
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#B8860B #050505',
+          backgroundColor: '#050505',
+          color: '#F5F5F5',
+        },
+        '#root': {
+          minHeight: '100vh',
+        },
+        '*': {
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#B8860B #050505',
+        },
+        '*::-webkit-scrollbar': {
+          width: '6px', // Barra mais fina e elegante
+          height: '6px',
+        },
+        '*::-webkit-scrollbar-track': {
+          backgroundColor: '#050505', // Fundo escuro do site
+          borderLeft: '1px solid rgba(212, 175, 55, 0.05)',
+        },
+        '*::-webkit-scrollbar-thumb': {
+          backgroundColor: '#2A2A2A',
+          borderRadius: '10px',
+          backgroundImage: 'linear-gradient(180deg, #2A2A2A 0%, #1A1A1A 100%)', // Degradê sutil
+          transition: 'background-color 0.3s ease',
+        },
+        '*::-webkit-scrollbar-thumb:hover': {
+          backgroundImage: 'linear-gradient(180deg, #D4AF37 0%, #B8860B 100%)', // Degradê dourado no hover
+        },
+      },
+    },
     MuiPaper: {
       styleOverrides: {
         root: {
