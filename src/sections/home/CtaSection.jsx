@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Button, Container, Typography } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { LeadModal } from '@/components/ui/LeadModal';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import { useLanguage } from '@/i18n/LanguageContext';
 
-export default function CtaSection({ onOpenContact }) {
+export default function CtaSection() {
   const { t } = useLanguage();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <AnimatedSection
@@ -52,7 +54,7 @@ export default function CtaSection({ onOpenContact }) {
           </Typography>
 
           <Button
-            onClick={onOpenContact}
+            onClick={() => setIsModalOpen(true)}
             variant="contained"
             size="large"
             endIcon={<ArrowForwardIcon />}
@@ -71,6 +73,8 @@ export default function CtaSection({ onOpenContact }) {
           </Button>
         </Box>
       </Container>
+
+      <LeadModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </AnimatedSection>
   );
 }

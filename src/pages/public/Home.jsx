@@ -26,9 +26,9 @@ export default function Home() {
       <HeroSection onOpenContact={handleOpenLeadModal} />
       <FeaturesSection />
       <StatsSection />
-      <CtaSection onOpenContact={handleOpenLeadModal} />
+      <CtaSection />
 
-      <ContactModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <ContactModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </Box>
   );
 }
