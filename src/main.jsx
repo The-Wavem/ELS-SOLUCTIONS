@@ -1,12 +1,16 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import Router from './Router.jsx'
+// src/main.jsx
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import Router from './Router.jsx';
+import { theme } from './theme';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
       <Router />
-    </BrowserRouter>
+    </ThemeProvider>
   </StrictMode>,
-)
+);
