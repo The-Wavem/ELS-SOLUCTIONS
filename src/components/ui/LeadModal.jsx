@@ -2,12 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Box,
   Button,
+  Autocomplete,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
-  MenuItem,
   Stack,
   TextField,
   Typography,
@@ -17,13 +17,39 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 const initialFormState = {
   nomeCompleto: '',
+  cargoTitulo: '',
   emailCorporativo: '',
   empresa: '',
-  paisOrigem: '',
+  paisOrigem: null,
   mensagem: '',
 };
 
-const countryOptions = ['Brasil', 'Emirados Árabes', 'China', 'EUA'];
+const blockedDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com', 'icloud.com'];
+
+const countries = [
+  { code: 'BR', label: 'Brasil' },
+  { code: 'AE', label: 'Emirados Árabes Unidos' },
+  { code: 'CN', label: 'China' },
+  { code: 'US', label: 'Estados Unidos' },
+  { code: 'SA', label: 'Arábia Saudita' },
+  { code: 'QA', label: 'Catar' },
+  { code: 'SG', label: 'Singapura' },
+  { code: 'IN', label: 'Índia' },
+  { code: 'JP', label: 'Japão' },
+  { code: 'KR', label: 'Coreia do Sul' },
+  { code: 'DE', label: 'Alemanha' },
+  { code: 'GB', label: 'Reino Unido' },
+  { code: 'FR', label: 'França' },
+  { code: 'CH', label: 'Suíça' },
+  { code: 'NL', label: 'Países Baixos' },
+  { code: 'ES', label: 'Espanha' },
+  { code: 'IT', label: 'Itália' },
+  { code: 'AR', label: 'Argentina' },
+  { code: 'CL', label: 'Chile' },
+  { code: 'MX', label: 'México' },
+];
+
+const corporateEmailErrorMessage = 'Por favor, utilize um e-mail corporativo. Provedores públicos não são aceitos para negociações B2B.';
 
 const fieldSx = {
   '& .MuiOutlinedInput-root': {
@@ -55,6 +81,7 @@ function buildLeadPayload(formData) {
     status: 'Novo',
     dataAtual: new Date().toLocaleString('pt-BR'),
     ...formData,
+    paisOrigem: formData.paisOrigem?.label ?? '',
   };
 }
 
@@ -62,6 +89,7 @@ export function LeadModal({ open, onClose }) {
   const [formData, setFormData] = useState(initialFormState);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [honeypot, setHoneypot] = useState('');
   const timerRef = useRef(null);
 
   useEffect(() => () => {
@@ -69,6 +97,9 @@ export function LeadModal({ open, onClose }) {
       clearTimeout(timerRef.current);
     }
   }, []);
+
+  const emailDomain = formData.emailCorporativo.trim().toLowerCase().split('@')[1] ?? '';
+  const isBlockedEmail = Boolean(emailDomain) && blockedDomains.includes(emailDomain);
 
   const handleFieldChange = (event) => {
     const { name, value } = event.target;
@@ -79,29 +110,40 @@ export function LeadModal({ open, onClose }) {
     }));
   };
 
+  const handleCountryChange = (_, value) => {
+    setFormData((current) => ({
+      ...current,
+      paisOrigem: value,
+    }));
+  };
+
   const handleSubmit = () => {
-    if (isLoading || isSuccess) {
+    if (isLoading || isSuccess || isBlockedEmail) {
       return;
     }
 
     setIsLoading(true);
 
     timerRef.current = setTimeout(() => {
-      const lead = buildLeadPayload(formData);
+      const shouldStoreLead = honeypot.trim().length === 0 && !isBlockedEmail;
 
-      const storedLeads = (() => {
-        try {
-          const rawLeads = window.localStorage.getItem('elc_leads');
-          const parsedLeads = rawLeads ? JSON.parse(rawLeads) : [];
+      if (shouldStoreLead) {
+        const lead = buildLeadPayload(formData);
 
-          return Array.isArray(parsedLeads) ? parsedLeads : [];
-        } catch {
-          return [];
-        }
-      })();
+        const storedLeads = (() => {
+          try {
+            const rawLeads = window.localStorage.getItem('elc_leads');
+            const parsedLeads = rawLeads ? JSON.parse(rawLeads) : [];
 
-      storedLeads.push(lead);
-      window.localStorage.setItem('elc_leads', JSON.stringify(storedLeads));
+            return Array.isArray(parsedLeads) ? parsedLeads : [];
+          } catch {
+            return [];
+          }
+        })();
+
+        storedLeads.push(lead);
+        window.localStorage.setItem('elc_leads', JSON.stringify(storedLeads));
+      }
 
       setIsLoading(false);
       setIsSuccess(true);
@@ -118,6 +160,7 @@ export function LeadModal({ open, onClose }) {
     setFormData(initialFormState);
     setIsLoading(false);
     setIsSuccess(false);
+    setHoneypot('');
 
     onClose();
   };
@@ -149,6 +192,16 @@ export function LeadModal({ open, onClose }) {
     >
       {!isSuccess ? (
         <Box component="form" onSubmit={(event) => { event.preventDefault(); handleSubmit(); }}>
+          <input
+            type="text"
+            name="website_url_catch"
+            style={{ display: 'none' }}
+            value={honeypot}
+            onChange={(event) => setHoneypot(event.target.value)}
+            tabIndex={-1}
+            autoComplete="off"
+          />
+
           <DialogTitle
             id="lead-modal-title"
             sx={{
@@ -193,6 +246,17 @@ export function LeadModal({ open, onClose }) {
               />
 
               <TextField
+                name="cargoTitulo"
+                label="Cargo / Título"
+                value={formData.cargoTitulo}
+                onChange={handleFieldChange}
+                variant="outlined"
+                fullWidth
+                placeholder="Ex: CEO, Diretor de Compras"
+                sx={fieldSx}
+              />
+
+              <TextField
                 name="emailCorporativo"
                 label="E-mail Corporativo"
                 type="email"
@@ -201,6 +265,8 @@ export function LeadModal({ open, onClose }) {
                 variant="outlined"
                 fullWidth
                 required
+                error={isBlockedEmail}
+                helperText={isBlockedEmail ? corporateEmailErrorMessage : ''}
                 sx={fieldSx}
               />
 
@@ -215,23 +281,23 @@ export function LeadModal({ open, onClose }) {
                 sx={fieldSx}
               />
 
-              <TextField
-                name="paisOrigem"
-                label="País de Origem"
+              <Autocomplete
+                options={countries}
                 value={formData.paisOrigem}
-                onChange={handleFieldChange}
-                variant="outlined"
-                fullWidth
-                select
-                required
-                sx={fieldSx}
-              >
-                {countryOptions.map((option) => (
-                  <MenuItem key={option} value={option}>
-                    {option}
-                  </MenuItem>
-                ))}
-              </TextField>
+                onChange={handleCountryChange}
+                getOptionLabel={(option) => option?.label ?? ''}
+                isOptionEqualToValue={(option, value) => option.code === value?.code}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="País de Origem"
+                    variant="outlined"
+                    required
+                    fullWidth
+                    sx={fieldSx}
+                  />
+                )}
+              />
 
               <TextField
                 name="mensagem"
@@ -260,7 +326,7 @@ export function LeadModal({ open, onClose }) {
             <Button
               type="submit"
               variant="contained"
-              disabled={isLoading}
+              disabled={isLoading || isBlockedEmail}
               sx={{
                 bgcolor: 'primary.main',
                 color: 'primary.contrastText',
@@ -271,7 +337,7 @@ export function LeadModal({ open, onClose }) {
                 },
               }}
             >
-              {isLoading ? 'Enviando...' : 'Enviar Solicitação'}
+              {isLoading ? 'Enviando...' : 'Enviar Solicitação B2B'}
             </Button>
           </DialogActions>
         </Box>
