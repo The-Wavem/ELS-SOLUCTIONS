@@ -3,10 +3,12 @@ import {
   Box,
   Button,
   Autocomplete,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   IconButton,
   Stack,
   TextField,
@@ -90,6 +92,7 @@ export function LeadModal({ open, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [honeypot, setHoneypot] = useState('');
+  const [allowPersonalEmail, setAllowPersonalEmail] = useState(false);
   const timerRef = useRef(null);
 
   useEffect(() => () => {
@@ -98,8 +101,19 @@ export function LeadModal({ open, onClose }) {
     }
   }, []);
 
-  const emailDomain = formData.emailCorporativo.trim().toLowerCase().split('@')[1] ?? '';
-  const isBlockedEmail = Boolean(emailDomain) && blockedDomains.includes(emailDomain);
+  const emailValue = formData.emailCorporativo.trim().toLowerCase();
+  const isValidEmailFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue);
+  const emailDomain = isValidEmailFormat ? emailValue.split('@')[1] : '';
+  const isBlockedEmail = isValidEmailFormat && !allowPersonalEmail && blockedDomains.includes(emailDomain);
+  const isSubmitDisabled = isLoading || !isValidEmailFormat || (!allowPersonalEmail && isBlockedEmail);
+  const isEmailInvalid = Boolean(emailValue) && (!isValidEmailFormat || isBlockedEmail);
+  const emailHelperText = !emailValue
+    ? ' '
+    : !isValidEmailFormat
+      ? 'Digite um e-mail válido.'
+      : isBlockedEmail
+        ? corporateEmailErrorMessage
+        : ' ';
 
   const handleFieldChange = (event) => {
     const { name, value } = event.target;
@@ -117,8 +131,12 @@ export function LeadModal({ open, onClose }) {
     }));
   };
 
+  const handlePersonalEmailToggle = (event) => {
+    setAllowPersonalEmail(event.target.checked);
+  };
+
   const handleSubmit = () => {
-    if (isLoading || isSuccess || isBlockedEmail) {
+    if (isLoading || isSuccess || !isValidEmailFormat || isBlockedEmail) {
       return;
     }
 
@@ -128,7 +146,10 @@ export function LeadModal({ open, onClose }) {
       const shouldStoreLead = honeypot.trim().length === 0 && !isBlockedEmail;
 
       if (shouldStoreLead) {
-        const lead = buildLeadPayload(formData);
+        const lead = {
+          ...buildLeadPayload(formData),
+          isPersonalEmail: allowPersonalEmail,
+        };
 
         const storedLeads = (() => {
           try {
@@ -161,6 +182,7 @@ export function LeadModal({ open, onClose }) {
     setIsLoading(false);
     setIsSuccess(false);
     setHoneypot('');
+    setAllowPersonalEmail(false);
 
     onClose();
   };
@@ -169,6 +191,7 @@ export function LeadModal({ open, onClose }) {
     <Dialog
       open={Boolean(open)}
       onClose={handleClose}
+      scroll="paper"
       fullWidth
       maxWidth="sm"
       slotProps={{
@@ -184,6 +207,9 @@ export function LeadModal({ open, onClose }) {
             border: '1px solid',
             borderColor: 'divider',
             borderRadius: 3,
+            maxHeight: { xs: 'calc(100vh - 24px)', sm: 'calc(100vh - 48px)' },
+            display: 'flex',
+            flexDirection: 'column',
             boxShadow: '0 24px 80px rgba(0, 0, 0, 0.55)',
             overflow: 'hidden',
           },
@@ -191,7 +217,11 @@ export function LeadModal({ open, onClose }) {
       }}
     >
       {!isSuccess ? (
-        <Box component="form" onSubmit={(event) => { event.preventDefault(); handleSubmit(); }}>
+        <Box
+          component="form"
+          onSubmit={(event) => { event.preventDefault(); handleSubmit(); }}
+          sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1 }}
+        >
           <input
             type="text"
             name="website_url_catch"
@@ -232,7 +262,7 @@ export function LeadModal({ open, onClose }) {
             </IconButton>
           </DialogTitle>
 
-          <DialogContent sx={{ pt: 1, pb: 2.5 }}>
+          <DialogContent sx={{ pt: 1, pb: 2.5, flex: 1, minHeight: 0, overflowY: 'auto' }}>
             <Stack spacing={2.25} sx={{ mt: 1 }}>
               <TextField
                 name="nomeCompleto"
@@ -265,9 +295,31 @@ export function LeadModal({ open, onClose }) {
                 variant="outlined"
                 fullWidth
                 required
-                error={isBlockedEmail}
-                helperText={isBlockedEmail ? corporateEmailErrorMessage : ''}
+                error={isEmailInvalid}
+                helperText={emailHelperText}
                 sx={fieldSx}
+              />
+
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={allowPersonalEmail}
+                    onChange={handlePersonalEmailToggle}
+                    size="small"
+                    sx={{
+                      color: 'primary.main',
+                      '&.Mui-checked': {
+                        color: 'primary.main',
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    Não possuo e-mail corporativo (Usar e-mail pessoal)
+                  </Typography>
+                }
+                sx={{ alignItems: 'flex-start', mt: -0.5, mx: 0 }}
               />
 
               <TextField
@@ -326,7 +378,7 @@ export function LeadModal({ open, onClose }) {
             <Button
               type="submit"
               variant="contained"
-              disabled={isLoading || isBlockedEmail}
+              disabled={isSubmitDisabled}
               sx={{
                 bgcolor: 'primary.main',
                 color: 'primary.contrastText',
