@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Card, CardContent, Chip, Divider, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import { Box, Card, CardContent, Chip, Divider, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, Tab, Typography } from '@mui/material';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import PublicIcon from '@mui/icons-material/Public';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { LeadTableRow } from '../../components/admin/LeadTableRow.jsx';
+import { LeadDetailModal } from '../../components/admin/LeadDetailModal.jsx';
 
 const demoLeads = [
   {
@@ -43,6 +45,8 @@ const demoLeads = [
 export function LeadsTableSection() {
   const { t } = useLanguage();
   const [leads, setLeads] = useState(demoLeads);
+  const [filter, setFilter] = useState('all');
+  const [selectedLead, setSelectedLead] = useState(null);
 
   useEffect(() => {
     try {
@@ -77,6 +81,16 @@ export function LeadsTableSection() {
   }, []);
 
   const totalLeads = useMemo(() => leads.length, [leads]);
+  const filteredLeads = useMemo(() => {
+    switch (filter) {
+      case 'qualified':
+        return leads.filter((lead) => !lead.isPersonalEmail);
+      case 'suspicious':
+        return leads.filter((lead) => Boolean(lead.isPersonalEmail));
+      default:
+        return leads;
+    }
+  }, [filter, leads]);
 
   return (
     <Box sx={{ p: 0, maxWidth: '100%' }}>
@@ -111,6 +125,34 @@ export function LeadsTableSection() {
 
           <Divider sx={{ borderColor: 'rgba(255,255,255,0.06)' }} />
 
+          <Box sx={{ px: 3, pt: 2, pb: 1 }}>
+            <Tabs
+              value={filter}
+              onChange={(_, newValue) => setFilter(newValue)}
+              textColor="primary"
+              indicatorColor="primary"
+              variant="scrollable"
+              scrollButtons="auto"
+              sx={{
+                minHeight: 44,
+                '& .MuiTab-root': {
+                  minHeight: 44,
+                  textTransform: 'none',
+                  fontWeight: 700,
+                },
+              }}
+            >
+              <Tab value="all" label="Todos os Contatos" />
+              <Tab value="qualified" label="Empresas Qualificadas" />
+              <Tab
+                value="suspicious"
+                icon={<WarningAmberIcon fontSize="small" />}
+                iconPosition="start"
+                label="Análise de Risco"
+              />
+            </Tabs>
+          </Box>
+
           <TableContainer component={Paper} sx={{ bgcolor: 'background.paper', boxShadow: 'none' }}>
             <Table sx={{ minWidth: 980 }} aria-label="tabela de leads">
               <TableHead>
@@ -125,14 +167,24 @@ export function LeadsTableSection() {
               </TableHead>
 
               <TableBody>
-                {leads.map((lead) => (
-                  <LeadTableRow key={lead.id} lead={lead} />
+                {filteredLeads.map((lead) => (
+                  <LeadTableRow
+                    key={lead.id}
+                    lead={lead}
+                    onClick={() => setSelectedLead(lead)}
+                  />
                 ))}
               </TableBody>
             </Table>
           </TableContainer>
         </CardContent>
       </Card>
+
+      <LeadDetailModal
+        open={Boolean(selectedLead)}
+        onClose={() => setSelectedLead(null)}
+        lead={selectedLead}
+      />
     </Box>
   );
 }

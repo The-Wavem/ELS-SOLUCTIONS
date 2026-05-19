@@ -4,6 +4,7 @@ import EmailIcon from '@mui/icons-material/Email';
 import BusinessIcon from '@mui/icons-material/Business';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import BadgeIcon from '@mui/icons-material/Badge';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { useLanguage } from '../../i18n/LanguageContext';
 
 const countryFlags = {
@@ -46,7 +47,7 @@ function getStatusChipProps(status, t) {
   }
 }
 
-export function LeadTableRow({ lead }) {
+export function LeadTableRow({ lead, onClick }) {
   const { t } = useLanguage();
   const name = lead.nomeCompleto || lead.name || 'Contato sem nome';
   const email = lead.emailCorporativo || lead.email || '';
@@ -58,8 +59,10 @@ export function LeadTableRow({ lead }) {
   return (
     <TableRow
       hover
+      onClick={onClick}
       sx={{
-        '&:last-child td, &:last-child th': { borderBottom: 0 },
+        cursor: 'pointer',
+        '&:last-child td, &:last-child th': { border: 0 },
         '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' },
       }}
     >
@@ -86,6 +89,9 @@ export function LeadTableRow({ lead }) {
               {email ? (
                 <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, color: 'text.secondary' }}>
                   <EmailIcon sx={{ fontSize: 14 }} />
+                  {lead.isPersonalEmail ? (
+                    <WarningAmberIcon sx={{ color: 'warning.main', fontSize: 16 }} />
+                  ) : null}
                   <Typography variant="caption" sx={{ color: 'inherit' }}>{email}</Typography>
                 </Box>
               ) : null}
