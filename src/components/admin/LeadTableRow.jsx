@@ -1,65 +1,29 @@
 import React from 'react';
-import { Avatar, Box, Chip, IconButton, Stack, TableCell, TableRow, Typography } from '@mui/material';
+import { Avatar, Box, IconButton, Stack, TableCell, TableRow, Typography } from '@mui/material';
 import EmailIcon from '@mui/icons-material/Email';
 import BusinessIcon from '@mui/icons-material/Business';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import BadgeIcon from '@mui/icons-material/Badge';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import { useLanguage } from '../../i18n/LanguageContext';
-
-const countryFlags = {
-  'Brasil': '🇧🇷',
-  'Emirados Árabes Unidos': '🇦🇪',
-  'China': '🇨🇳',
-  'Estados Unidos': '🇺🇸',
-  'Arábia Saudita': '🇸🇦',
-  'Catar': '🇶🇦',
-  'Singapura': '🇸🇬',
-  'Índia': '🇮🇳',
-  'Japão': '🇯🇵',
-  'Coreia do Sul': '🇰🇷',
-  'Alemanha': '🇩🇪',
-  'Reino Unido': '🇬🇧',
-  'França': '🇫🇷',
-  'Suíça': '🇨🇭',
-  'Países Baixos': '🇳🇱',
-  'Espanha': '🇪🇸',
-  'Itália': '🇮🇹',
-  'Argentina': '🇦🇷',
-  'Chile': '🇨🇱',
-  'México': '🇲🇽',
-};
-
-function getStatusChipProps(status, t) {
-  switch (status) {
-    case 'Novo':
-    case 'New':
-      return { label: t('admin.leads.status.new'), color: 'warning' };
-    case 'Em tratativa':
-    case 'Em Tratativa':
-    case 'In progress':
-      return { label: t('admin.leads.status.progress'), color: 'info' };
-    case 'Fechado':
-    case 'Closed':
-      return { label: t('admin.leads.status.closed'), color: 'success' };
-    default:
-      return { label: t('admin.leads.status.unknown'), variant: 'outlined' };
-  }
-}
+import { motion } from 'framer-motion';
 
 export function LeadTableRow({ lead, onClick }) {
-  const { t } = useLanguage();
   const name = lead.nomeCompleto || lead.name || 'Contato sem nome';
   const email = lead.emailCorporativo || lead.email || '';
   const company = lead.empresa || lead.company || '—';
   const country = lead.paisOrigem || lead.country || '—';
-  const countryFlag = countryFlags[country] || lead.flag || '🏳️';
+  const countryFlag = lead.flag || '🌐';
   const title = lead.cargoTitulo || lead.role || '';
 
   return (
     <TableRow
+      component={motion.tr}
       hover
       onClick={onClick}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.3 }}
       sx={{
         cursor: 'pointer',
         '&:last-child td, &:last-child th': { border: 0 },
@@ -118,20 +82,6 @@ export function LeadTableRow({ lead, onClick }) {
             {country}
           </Typography>
         </Box>
-      </TableCell>
-
-      <TableCell sx={{ borderBottomColor: 'rgba(255,255,255,0.06)' }}>
-        <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-          <Chip {...getStatusChipProps(lead.status, t)} size="small" sx={{ fontWeight: 700 }} />
-          {lead.isPersonalEmail ? (
-            <Chip
-              label={t('admin.leads.col.exception')}
-              size="small"
-              variant="outlined"
-              sx={{ borderColor: 'rgba(255,255,255,0.16)', color: 'text.secondary' }}
-            />
-          ) : null}
-        </Stack>
       </TableCell>
 
       <TableCell align="right" sx={{ borderBottomColor: 'rgba(255,255,255,0.06)' }}>

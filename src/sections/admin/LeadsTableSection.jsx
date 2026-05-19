@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   Box,
   Button,
@@ -367,8 +368,8 @@ export function LeadsTableSection() {
                   labelId="country-filter-label"
                   label="País"
                   value={selectedCountry}
-                    displayEmpty
-                    renderValue={(selected) => selected || 'Todos os Países'}
+                  displayEmpty
+                  renderValue={(selected) => selected || 'Todos os Países'}
                   onChange={(event) => {
                     setSelectedCountry(event.target.value);
                     setPage(0);
@@ -432,28 +433,29 @@ export function LeadsTableSection() {
                     <TableCell sx={{ color: 'text.secondary', borderBottomColor: 'rgba(255,255,255,0.06)' }}>{t('admin.leads.col.contact')}</TableCell>
                     <TableCell sx={{ color: 'text.secondary', borderBottomColor: 'rgba(255,255,255,0.06)' }}>{t('admin.leads.col.company')}</TableCell>
                     <TableCell sx={{ color: 'text.secondary', borderBottomColor: 'rgba(255,255,255,0.06)' }}>{t('admin.leads.col.country')}</TableCell>
-                    <TableCell sx={{ color: 'text.secondary', borderBottomColor: 'rgba(255,255,255,0.06)' }}>{t('admin.leads.col.status')}</TableCell>
                     <TableCell align="right" sx={{ color: 'text.secondary', borderBottomColor: 'rgba(255,255,255,0.06)' }}>{t('admin.leads.col.actions')}</TableCell>
                   </TableRow>
                 </TableHead>
 
-                <TableBody>
-                  {paginatedLeads.length > 0 ? (
-                    paginatedLeads.map((lead) => (
-                      <LeadTableRow
-                        key={lead.id}
-                        lead={lead}
-                        onClick={() => setSelectedLead(lead)}
-                      />
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 5, color: 'text.secondary' }}>
-                        Nenhum lead encontrado com os filtros aplicados.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
+                  <TableBody component={motion.tbody}>
+                    <AnimatePresence mode="popLayout">
+                      {paginatedLeads.length > 0 ? (
+                        paginatedLeads.map((lead) => (
+                          <LeadTableRow
+                            key={lead.id}
+                            lead={lead}
+                            onClick={() => setSelectedLead(lead)}
+                          />
+                        ))
+                      ) : (
+                        <TableRow key="empty-state">
+                          <TableCell colSpan={5} align="center" sx={{ py: 5, color: 'text.secondary' }}>
+                            Nenhum lead encontrado com os filtros aplicados.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </AnimatePresence>
+                  </TableBody>
               </Table>
             </TableContainer>
 

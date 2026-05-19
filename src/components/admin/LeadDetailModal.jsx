@@ -1,9 +1,9 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import {
   Alert,
   Box,
   Button,
-  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -21,7 +21,6 @@ import BusinessIcon from '@mui/icons-material/Business';
 import PublicIcon from '@mui/icons-material/Public';
 import PhoneIcon from '@mui/icons-material/Phone';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import CachedIcon from '@mui/icons-material/Cached';
 
 function formatLeadDate(value) {
   if (!value) {
@@ -53,24 +52,7 @@ function isPersonalOrGenericEmail(email = '', isPersonalEmail = false) {
   );
 }
 
-function getStatusChipProps(status) {
-  switch (status) {
-    case 'Novo':
-    case 'New':
-      return { label: 'Novo', color: 'warning' };
-    case 'Em tratativa':
-    case 'Em Tratativa':
-    case 'In progress':
-      return { label: 'Em Tratativa', color: 'info' };
-    case 'Fechado':
-    case 'Closed':
-      return { label: 'Fechado', color: 'success' };
-    default:
-      return { label: status || 'Desconhecido', variant: 'outlined' };
-  }
-}
-
-export function LeadDetailModal({ open, onClose, lead, onChangeStatus }) {
+export function LeadDetailModal({ open, onClose, lead }) {
   if (!lead) {
     return null;
   }
@@ -79,12 +61,26 @@ export function LeadDetailModal({ open, onClose, lead, onChangeStatus }) {
   const role = lead.role || lead.cargoTitulo || 'Sem cargo';
   const company = lead.company || lead.empresa || '—';
   const country = lead.country || lead.paisOrigem || '—';
-  const flag = lead.flag || '🏳️';
+  const flag = lead.flag || '🌐';
   const email = lead.email || lead.emailCorporativo || '';
   const phone = lead.phone || '—';
-  const statusChipProps = getStatusChipProps(lead.status);
   const riskIsWarning = isPersonalOrGenericEmail(email, Boolean(lead.isPersonalEmail));
   const mailtoHref = email ? `mailto:${email}` : undefined;
+
+  const dataVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: { opacity: 1, x: 0 },
+  };
 
   return (
     <Dialog
@@ -121,12 +117,9 @@ export function LeadDetailModal({ open, onClose, lead, onChangeStatus }) {
             </Typography>
           </Box>
 
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Chip {...statusChipProps} size="small" sx={{ fontWeight: 700 }} />
-            <IconButton aria-label="Fechar detalhes do lead" onClick={onClose} sx={{ color: 'text.secondary' }}>
-              <CloseIcon />
-            </IconButton>
-          </Stack>
+          <IconButton aria-label="Fechar detalhes do lead" onClick={onClose} sx={{ color: 'text.secondary' }}>
+            <CloseIcon />
+          </IconButton>
         </Stack>
       </DialogTitle>
 
@@ -140,87 +133,103 @@ export function LeadDetailModal({ open, onClose, lead, onChangeStatus }) {
               : 'E-mail Corporativo Autenticado.'}
           </Alert>
 
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: 'background.default', borderColor: 'rgba(255,255,255,0.08)' }}>
-                <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mb: 1 }}>
-                  <BusinessIcon fontSize="small" sx={{ color: 'primary.main' }} />
-                  <Typography variant="overline" sx={{ color: 'primary.main' }}>
-                    Empresa
-                  </Typography>
-                </Stack>
-                <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 600 }}>
-                  {company}
-                </Typography>
-              </Paper>
+          <motion.div variants={dataVariants} initial="hidden" animate="visible">
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <motion.div variants={itemVariants}>
+                  <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: 'background.default', borderColor: 'rgba(255,255,255,0.08)' }}>
+                    <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mb: 1 }}>
+                      <BusinessIcon fontSize="small" sx={{ color: 'primary.main' }} />
+                      <Typography variant="overline" sx={{ color: 'primary.main' }}>
+                        Empresa
+                      </Typography>
+                    </Stack>
+                    <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 600 }}>
+                      {company}
+                    </Typography>
+                  </Paper>
+                </motion.div>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <motion.div variants={itemVariants}>
+                  <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: 'background.default', borderColor: 'rgba(255,255,255,0.08)' }}>
+                    <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mb: 1 }}>
+                      <PublicIcon fontSize="small" sx={{ color: 'primary.main' }} />
+                      <Typography variant="overline" sx={{ color: 'primary.main' }}>
+                        País
+                      </Typography>
+                    </Stack>
+                    <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 600 }}>
+                      <Typography component="span" sx={{ fontSize: 24, lineHeight: 1, mr: 0.75 }}>
+                        {flag}
+                      </Typography>
+                      {country}
+                    </Typography>
+                  </Paper>
+                </motion.div>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <motion.div variants={itemVariants}>
+                  <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: 'background.default', borderColor: 'rgba(255,255,255,0.08)' }}>
+                    <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mb: 1 }}>
+                      <EmailIcon fontSize="small" sx={{ color: 'primary.main' }} />
+                      <Typography variant="overline" sx={{ color: 'primary.main' }}>
+                        E-mail
+                      </Typography>
+                    </Stack>
+                    <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 600, wordBreak: 'break-word' }}>
+                      {email || '—'}
+                    </Typography>
+                  </Paper>
+                </motion.div>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <motion.div variants={itemVariants}>
+                  <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: 'background.default', borderColor: 'rgba(255,255,255,0.08)' }}>
+                    <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mb: 1 }}>
+                      <PhoneIcon fontSize="small" sx={{ color: 'primary.main' }} />
+                      <Typography variant="overline" sx={{ color: 'primary.main' }}>
+                        Telefone
+                      </Typography>
+                    </Stack>
+                    <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 600 }}>
+                      {phone}
+                    </Typography>
+                  </Paper>
+                </motion.div>
+              </Grid>
+
+              <Grid item xs={12}>
+                <motion.div variants={itemVariants}>
+                  <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: 'background.default', borderColor: 'rgba(255,255,255,0.08)' }}>
+                    <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mb: 1 }}>
+                      <CalendarMonthIcon fontSize="small" sx={{ color: 'primary.main' }} />
+                      <Typography variant="overline" sx={{ color: 'primary.main' }}>
+                        Data do Contato
+                      </Typography>
+                    </Stack>
+                    <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 600 }}>
+                      {formatLeadDate(lead.dataAtual || lead.createdAt || lead.date)}
+                    </Typography>
+                  </Paper>
+                </motion.div>
+              </Grid>
             </Grid>
 
-            <Grid item xs={12} sm={6}>
-              <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: 'background.default', borderColor: 'rgba(255,255,255,0.08)' }}>
-                <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mb: 1 }}>
-                  <PublicIcon fontSize="small" sx={{ color: 'primary.main' }} />
-                  <Typography variant="overline" sx={{ color: 'primary.main' }}>
-                    País
-                  </Typography>
-                </Stack>
-                <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 600 }}>
-                  <span style={{ fontSize: '1.1rem', marginRight: '0.4rem' }}>{flag}</span>
-                  {country}
+            <motion.div variants={itemVariants}>
+              <Paper variant="outlined" sx={{ p: 2, mt: 2, bgcolor: 'background.default', borderColor: 'rgba(255,255,255,0.08)' }}>
+                <Typography variant="overline" sx={{ color: 'primary.main', display: 'block', mb: 1 }}>
+                  Demanda do Cliente
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', whiteSpace: 'pre-line' }}>
+                  {lead.message || lead.mensagem || lead.demand || 'Sem demanda registrada.'}
                 </Typography>
               </Paper>
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: 'background.default', borderColor: 'rgba(255,255,255,0.08)' }}>
-                <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mb: 1 }}>
-                  <EmailIcon fontSize="small" sx={{ color: 'primary.main' }} />
-                  <Typography variant="overline" sx={{ color: 'primary.main' }}>
-                    E-mail
-                  </Typography>
-                </Stack>
-                <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 600, wordBreak: 'break-word' }}>
-                  {email || '—'}
-                </Typography>
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: 'background.default', borderColor: 'rgba(255,255,255,0.08)' }}>
-                <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mb: 1 }}>
-                  <PhoneIcon fontSize="small" sx={{ color: 'primary.main' }} />
-                  <Typography variant="overline" sx={{ color: 'primary.main' }}>
-                    Telefone
-                  </Typography>
-                </Stack>
-                <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 600 }}>
-                  {phone}
-                </Typography>
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Paper variant="outlined" sx={{ p: 2, height: '100%', bgcolor: 'background.default', borderColor: 'rgba(255,255,255,0.08)' }}>
-                <Stack direction="row" spacing={1.25} alignItems="center" sx={{ mb: 1 }}>
-                  <CalendarMonthIcon fontSize="small" sx={{ color: 'primary.main' }} />
-                  <Typography variant="overline" sx={{ color: 'primary.main' }}>
-                    Data do Contato
-                  </Typography>
-                </Stack>
-                <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 600 }}>
-                  {formatLeadDate(lead.dataAtual || lead.createdAt || lead.date)}
-                </Typography>
-              </Paper>
-            </Grid>
-          </Grid>
-
-          <Paper variant="outlined" sx={{ p: 2, mt: 2, bgcolor: 'background.default', borderColor: 'rgba(255,255,255,0.08)' }}>
-            <Typography variant="overline" sx={{ color: 'primary.main', display: 'block', mb: 1 }}>
-              Demanda do Cliente
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary', whiteSpace: 'pre-line' }}>
-              {lead.message || lead.mensagem || lead.demand || 'Sem demanda registrada.'}
-            </Typography>
-          </Paper>
+            </motion.div>
+          </motion.div>
         </Stack>
       </DialogContent>
 
@@ -234,19 +243,6 @@ export function LeadDetailModal({ open, onClose, lead, onChangeStatus }) {
           startIcon={<EmailIcon />}
         >
           Responder por E-mail
-        </Button>
-
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            if (typeof onChangeStatus === 'function') {
-              onChangeStatus(lead);
-            }
-          }}
-          startIcon={<CachedIcon />}
-        >
-          Mudar Status
         </Button>
 
         <Button variant="text" onClick={onClose}>
