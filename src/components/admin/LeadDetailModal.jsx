@@ -22,6 +22,20 @@ import PublicIcon from '@mui/icons-material/Public';
 import PhoneIcon from '@mui/icons-material/Phone';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
+const flagMap = {
+  'Brasil': '🇧🇷',
+  'Emirados Árabes Unidos': '🇦🇪',
+  'China': '🇨🇳',
+  'Estados Unidos': '🇺🇸',
+  'Arábia Saudita': '🇸🇦',
+  'Catar': '🇶🇦',
+  'Índia': '🇮🇳',
+  'Singapura': '🇸🇬',
+  'Japão': '🇯🇵',
+  'Alemanha': '🇩🇪',
+  'Reino Unido': '🇬🇧',
+};
+
 function formatLeadDate(value) {
   if (!value) {
     return 'Sem data';
@@ -61,7 +75,7 @@ export function LeadDetailModal({ open, onClose, lead }) {
   const role = lead.role || lead.cargoTitulo || 'Sem cargo';
   const company = lead.company || lead.empresa || '—';
   const country = lead.country || lead.paisOrigem || '—';
-  const flag = lead.flag || '🌐';
+  const displayFlag = lead.flag || flagMap[lead.country] || '🌐';
   const email = lead.email || lead.emailCorporativo || '';
   const phone = lead.phone || '—';
   const riskIsWarning = isPersonalOrGenericEmail(email, Boolean(lead.isPersonalEmail));
@@ -162,7 +176,7 @@ export function LeadDetailModal({ open, onClose, lead }) {
                     </Stack>
                     <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 600 }}>
                       <Typography component="span" sx={{ fontSize: 24, lineHeight: 1, mr: 0.75 }}>
-                        {flag}
+                        {displayFlag}
                       </Typography>
                       {country}
                     </Typography>

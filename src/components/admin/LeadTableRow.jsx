@@ -7,12 +7,26 @@ import BadgeIcon from '@mui/icons-material/Badge';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { motion } from 'framer-motion';
 
+const flagMap = {
+  'Brasil': '🇧🇷',
+  'Emirados Árabes Unidos': '🇦🇪',
+  'China': '🇨🇳',
+  'Estados Unidos': '🇺🇸',
+  'Arábia Saudita': '🇸🇦',
+  'Catar': '🇶🇦',
+  'Índia': '🇮🇳',
+  'Singapura': '🇸🇬',
+  'Japão': '🇯🇵',
+  'Alemanha': '🇩🇪',
+  'Reino Unido': '🇬🇧',
+};
+
 export function LeadTableRow({ lead, onClick }) {
   const name = lead.nomeCompleto || lead.name || 'Contato sem nome';
   const email = lead.emailCorporativo || lead.email || '';
   const company = lead.empresa || lead.company || '—';
   const country = lead.paisOrigem || lead.country || '—';
-  const countryFlag = lead.flag || '🌐';
+  const displayFlag = lead.flag || flagMap[lead.country] || '🌐';
   const title = lead.cargoTitulo || lead.role || '';
 
   return (
@@ -76,7 +90,7 @@ export function LeadTableRow({ lead, onClick }) {
       <TableCell sx={{ borderBottomColor: 'rgba(255,255,255,0.06)' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography component="span" sx={{ fontSize: 18 }}>
-            {countryFlag}
+            {displayFlag}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             {country}
